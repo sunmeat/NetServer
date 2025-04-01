@@ -8,7 +8,7 @@ class Program
 {
     static async Task Main()
     {
-        string port = Environment.GetEnvironmentVariable("PORT") ?? "5000"; // Render сам задаёт порт
+        string port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
         string url = $"http://+:{port}/send/";
         
         HttpListener listener = new HttpListener();
@@ -30,7 +30,7 @@ class Program
 
         if (request.HttpMethod != "POST")
         {
-            response.StatusCode = 405; // Method Not Allowed
+            response.StatusCode = 405;
             await response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes("Только POST-запросы"));
             response.OutputStream.Close();
             return;
