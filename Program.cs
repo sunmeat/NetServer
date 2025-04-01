@@ -1,32 +1,36 @@
-﻿using System.Net;
-using System.Net.Sockets;
+using System;
+using System.Net;
 using System.Text;
 
 class Program
 {
     static void Main()
     {
-        const int port = 5000;
-        var listener = new TcpListener(IPAddress.Any, port);
+        string url = "http://*:5000/";
+        HttpListener listener = new HttpListener();
+        listener.Prefixes.Add(url);
         listener.Start();
-        Console.WriteLine($"Сервер запущен на порту {port}");
+        Console.WriteLine($"Сервер запущен на {url}");
 
         while (true)
         {
-            using var client = listener.AcceptTcpClient();
-            using var stream = client.GetStream();
+            HttpListenerContext context = listener.GetContext();
+            HttpListenerRequest request = context.Request;
+            HttpListenerResponse response = context.Response;
 
-            byte[] buffer = new byte[1024];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-            string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            string numberStr = request.QueryString["number"];
 
-            if (int.TryParse(receivedData, out int number))
+            if (int.TryParse(numberStr, out int number))
             {
                 int result = number + 1;
-                byte[] response = Encoding.UTF8.GetBytes(result.ToString());
-                stream.Write(response, 0, response.Length);
+                byte[] buffer = Encoding.UTF8.GetBytes(result.ToString());
+
+                response.ContentLength64 = buffer.Length;
+                response.OutputStream.Write(buffer, 0, buffer.Length);
                 Console.WriteLine($"Получено: {number}, отправлено: {result}");
             }
+
+            response.OutputStream.Close();
         }
     }
 }
