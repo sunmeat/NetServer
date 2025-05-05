@@ -28,11 +28,24 @@ class Program
         HttpListenerRequest request = context.Request;
         HttpListenerResponse response = context.Response;
 
+        // add CORS headers to all responses (for JavaScript example)
+        response.AddHeader("Access-Control-Allow-Origin", "*");
+        response.AddHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
+
+        // handle preflight OPTIONS request (for JavaScript example)
+        if (request.HttpMethod == "OPTIONS")
+        {
+            response.StatusCode = 200;
+            response.Close();
+            return;
+        }
+
         if (request.HttpMethod != "POST")
         {
             response.StatusCode = 405;
             await response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes("Только POST-запросы"));
-            response.OutputStream.Close();
+            response.Close();
             return;
         }
 
@@ -55,6 +68,6 @@ class Program
             await response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes("Ошибка: ожидалось число."));
         }
 
-        response.OutputStream.Close();
+        response.Close();
     }
 }
